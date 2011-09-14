@@ -37,7 +37,18 @@ class Scamp
   def connect!(channel_list)
     connect(api_key, channel_list)
   end
-  
+
+  def print_channels
+    EM.run do
+      populate_channel_list do
+        channels.each do |name, data|
+          puts "#{data["id"]}: #{name.inspect}"
+        end
+        EM.stop
+      end
+    end
+  end
+
   def command_list
     matchers.map{|m| [m.trigger, m.conditions] }
   end
