@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Scamp : A platform agnostic bot framework." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Scamp</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/omgitsads/Scamp">Fork Me on GitHub</a>
+
+          <h1 id="project_title">Scamp</h1>
+          <h2 id="project_tagline">A platform agnostic bot framework.</h2>
+
+          <section id="downloads">
+            <a class="zip_download_link" href="https://github.com/omgitsads/Scamp/zipball/master">Download this project as a .zip file</a>
+            <a class="tar_download_link" href="https://github.com/omgitsads/Scamp/tarball/master">Download this project as a tar.gz file</a>
+          </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Scamp</h1>
+
+<p>A framework for writing <a href="http://campfirenow.com/">Campfire</a> bots. Scamp is in early development so use it at your own risk, pull requests welcome.</p>
+
+<p>Scamp is designed to be simple, to get out of your way and to let you do what you want. It doesn't have any baggage, so no administration web interfaces, no built in commands. It's a blank slate for you to build on.</p>
+
+<p>If you like or use Scamp I'd love to hear from you. Drop me at line at will at 37signals dot com and tell me how you are using it.</p>
+
+<h2>Requirements</h2>
+
+<p>Ruby &gt;= 1.9.2 (At least for the named captures)</p>
+
+<h2>Installation</h2>
+
+<p><code>gem install scamp</code> or put <code>gem 'scamp'</code> in your Gemfile.</p>
+
+<h2>Usage and Examples</h2>
+
+<h3>The most simple example:</h3>
+
+<div class="highlight">
+<pre><span class="nb">require</span> <span class="s1">'scamp'</span>
+<span class="nb">require</span> <span class="s1">'scamp-campfire-adapter'</span>
+
+<span class="no">Scamp</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">scamp</span><span class="o">|</span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">adapter</span> <span class="ss">:campfire</span><span class="p">,</span> <span class="no">Scamp</span><span class="o">::</span><span class="no">Campfire</span><span class="o">::</span><span class="no">Adapter</span><span class="p">,</span> <span class="ss">:api_key</span> <span class="o">=&gt;</span> <span class="s2">"YOUR API KEY"</span><span class="p">,</span> 
+                                                     <span class="ss">:subdomain</span> <span class="o">=&gt;</span> <span class="s2">"yoursubdomain"</span><span class="p">,</span>
+                                                     <span class="ss">:rooms</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="mi">293788</span><span class="p">,</span><span class="s2">"Monitoring"</span><span class="o">]</span>
+
+  <span class="c1"># Simple matching based on regex or string:</span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">match</span> <span class="s2">"ping"</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">say</span> <span class="s2">"pong"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<h3>Everyone wants an image search</h3>
+
+<div class="highlight">
+<pre><span class="nb">require</span> <span class="s1">'scamp'</span>
+<span class="nb">require</span> <span class="s1">'cgi'</span>
+
+<span class="no">Scamp</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">scamp</span><span class="o">|</span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">adapter</span> <span class="ss">:campfire</span><span class="p">,</span> <span class="no">Scamp</span><span class="o">::</span><span class="no">Campfire</span><span class="o">::</span><span class="no">Adapter</span><span class="p">,</span> <span class="ss">:api_key</span> <span class="o">=&gt;</span> <span class="s2">"YOUR API KEY"</span><span class="p">,</span> 
+                                                     <span class="ss">:subdomain</span> <span class="o">=&gt;</span> <span class="s2">"yoursubdomain"</span><span class="p">,</span>
+                                                     <span class="ss">:rooms</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="mi">293788</span><span class="p">,</span><span class="s2">"Monitoring"</span><span class="o">]</span>
+
+  <span class="n">scamp</span><span class="o">.</span><span class="n">match</span> <span class="sr">/^artme (?&lt;search&gt;\w+)/</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">"<a href="http://ajax.googleapis.com/ajax/services/search/images?rsz=large&amp;start=0&amp;v=1.0&amp;q=">http://ajax.googleapis.com/ajax/services/search/images?rsz=large&amp;start=0&amp;v=1.0&amp;q=</a></span><span class="si">#{</span><span class="no">CGI</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">search</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">http</span> <span class="o">=</span> <span class="no">EventMachine</span><span class="o">::</span><span class="no">HttpRequest</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+    <span class="n">http</span><span class="o">.</span><span class="n">errback</span> <span class="p">{</span> <span class="n">say</span> <span class="s2">"Couldn't get </span><span class="si">#{</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">http</span><span class="o">.</span><span class="n">response_status</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+    <span class="n">http</span><span class="o">.</span><span class="n">callback</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="n">http</span><span class="o">.</span><span class="n">response_header</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="no">Yajl</span><span class="o">::</span><span class="no">Parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">results</span><span class="o">[</span><span class="s1">'responseData'</span><span class="o">][</span><span class="s1">'results'</span><span class="o">].</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span>
+          <span class="n">say</span> <span class="n">results</span><span class="o">[</span><span class="s1">'responseData'</span><span class="o">][</span><span class="s1">'results'</span><span class="o">][</span><span class="mi">0</span><span class="o">][</span><span class="s1">'url'</span><span class="o">]</span>
+        <span class="k">else</span>
+          <span class="n">say</span> <span class="s2">"No images matched </span><span class="si">#{</span><span class="n">search</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">end</span>
+      <span class="k">else</span>
+        <span class="c1"># logger.warn "Couldn't get #{url}"</span>
+        <span class="n">say</span> <span class="s2">"Couldn't get </span><span class="si">#{</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">end</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<h3>A more in-depth run through</h3>
+
+<p>Matchers are tested in order and all that satisfy the match and conditions will be run. Careful, Scamp listens to itself, you could easily create an infinite loop. Look in the examples dir for more.</p>
+
+<div class="highlight">
+<pre><span class="nb">require</span> <span class="s1">'scamp'</span>
+
+<span class="c1"># Add :verbose =&gt; true to get debug output, otherwise the logger will output INFO</span>
+<span class="no">Scamp</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">scamp</span><span class="o">|</span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">adapter</span> <span class="ss">:campfire</span><span class="p">,</span> <span class="no">Scamp</span><span class="o">::</span><span class="no">Campfire</span><span class="o">::</span><span class="no">Adapter</span><span class="p">,</span> <span class="ss">:api_key</span> <span class="o">=&gt;</span> <span class="s2">"YOUR API KEY"</span><span class="p">,</span> 
+                                                     <span class="ss">:subdomain</span> <span class="o">=&gt;</span> <span class="s2">"yoursubdomain"</span><span class="p">,</span> 
+                                                     <span class="ss">:rooms</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="mi">293788</span><span class="p">,</span><span class="s2">"Monitoring"</span><span class="o">]</span><span class="p">,</span>
+                                                     <span class="ss">:verbose</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+
+  <span class="c1"># </span>
+  <span class="c1"># Simple matching based on regex or string:</span>
+  <span class="c1"># </span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">match</span> <span class="sr">/^repeat (\w+), (\w+)$/</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">say</span> <span class="s2">"You said </span><span class="si">#{</span><span class="n">matches</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="si">}</span><span class="s2"> and </span><span class="si">#{</span><span class="n">matches</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="c1"># </span>
+  <span class="c1"># Named captures become available in your match block</span>
+  <span class="c1"># </span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">match</span> <span class="sr">/^say (?&lt;yousaid&gt;.+)$/</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">say</span> <span class="s2">"You said </span><span class="si">#{</span><span class="n">yousaid</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="c1"># </span>
+  <span class="c1"># A list of commands is available as command_list this matcher uses it</span>
+  <span class="c1"># to format a help text</span>
+  <span class="c1"># </span>
+  <span class="n">scamp</span><span class="o">.</span><span class="n">match</span> <span class="s2">"help"</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">max_command_length</span> <span class="o">=</span> <span class="n">command_list</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">cl</span><span class="o">|</span> <span class="n">cl</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">to_s</span> <span class="p">}</span><span class="o">.</span><span class="n">max_by</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:size</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">format_string</span> <span class="o">=</span> <span class="s2">"%</span><span class="si">#{</span><span class="n">max_command_length</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">s"</span>
+    <span class="n">formatted_commands</span> <span class="o">=</span> <span class="n">command_list</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">action</span><span class="p">,</span> <span class="n">conds</span><span class="o">|</span> <span class="s2">"</span><span class="si">#{</span><span class="nb">sprintf</span><span class="p">(</span><span class="n">format_string</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span><span class="si">}</span><span class="s2"> | </span><span class="si">#{</span><span class="n">conds</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="s1">''</span> <span class="p">:</span> <span class="n">conds</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+    <span class="n">say</span> <span class="o">&lt;&lt;-</span><span class="no">EOS</span>
+<span class="sh">#{sprintf("%-#{max_command_length + 1}s", "Command match")} | Conditions</span>
+<span class="sh">--------------------------------------------------------------------------------</span>
+<span class="sh">#{formatted_commands.join("\n")}</span>
+<span class="no">    EOS</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+</pre>
+</div>
+
+
+<p>Scamp will also run <em>all</em> match blocks that an input string matches, you can make Scamp only run the first block it matches by passing in :first_match_only =&gt; true:</p>
+
+<div class="highlight">
+<pre><span class="no">Scamp</span><span class="o">.</span><span class="n">new</span> <span class="ss">:first_match_only</span> <span class="o">=&gt;</span> <span class="kp">true</span> <span class="k">do</span> <span class="o">|</span><span class="n">scamp</span><span class="o">|</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<h2>TODO</h2>
+
+<pre><code>* Allow multiple values for conditions, eg: :conditions =&gt; {:user =&gt; ["Some User", "Some Other User"]}
+</code></pre>
+
+<h2>How to contribute</h2>
+
+<p>Here's the most direct way to get your work merged into the project:</p>
+
+<ol>
+<li>Fork the project</li>
+<li>Clone down your fork</li>
+<li>Create a feature branch</li>
+<li>Add your feature + tests</li>
+<li>Document new features in the README</li>
+<li>Make sure everything still passes by running the tests</li>
+<li>If necessary, rebase your commits into logical chunks, without errors</li>
+<li>Push the branch up</li>
+<li>Send a pull request for your branch</li>
+</ol><p>Take a look at the TODO list or known issues for some inspiration if you need it.</p>
+
+<h2>Thanks</h2>
+
+<p>First class support, commits and pull requests, thanks guys!</p>
+
+<ul>
+<li><a href="http://caius.name/">Caius Durling</a></li>
+<li>Sudara Williams of <a href="http://ramenmusic.com">Ramen Music</a>
+</li>
+<li>
+<a href="http://www.thehodge.co.uk/">Dom Hodgson</a> (for the name)</li>
+<li><a href="http://adamholt.co.uk/">Adam Holt</a></li>
+</ul><h2>License</h2>
+
+<p>See LICENSE.md</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Scamp maintained by <a href="https://github.com/omgitsads">omgitsads</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
