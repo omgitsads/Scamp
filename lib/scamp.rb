@@ -22,7 +22,7 @@ class Scamp
     @adapters ||= {}
     @plugins  ||= []
 
-    yield self
+    yield self if block_given?
   end
 
   def adapter name, klass, opts={}
