@@ -1,26 +1,22 @@
 class Scamp
   class Adapter
-    def initialize(bot, opts={})
+    include Celluloid
+    attr_reader :channel
+
+    def initialize(channel, bot, opts={})
+      @channel = channel
       @bot = bot
       @opts = opts
-    end
-
-    def subscribe &block
-      channel.subscribe &block
+      @block = nil
     end
 
     def push(msg)
-      channel.push msg
+      @bot.queue.push [self, *msg]
     end
     alias_method :<<, :push
 
-    def connect!
-      raise NotImplementedError, "connect! must be implemented"
+    def connect
+      raise NotImplementedError, "#connect must be implemented"
     end
-
-    private
-      def channel
-        @channel ||= EM::Channel.new
-      end
   end
 end

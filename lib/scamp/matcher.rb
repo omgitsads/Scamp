@@ -1,5 +1,6 @@
 class Scamp
   class Matcher
+    include Celluloid
     attr_accessor :on, :conditions, :trigger, :action, :bot, :required_prefix
 
     def initialize(bot, params = {})
@@ -11,6 +12,7 @@ class Scamp
     end
 
     def attempt(channel, context, msg)
+      bot.logger.info "Attempting to match #{msg} to #{trigger} on #{channel}"
       if listening?(channel) && msg.matches?(trigger) && msg.valid?(conditions)
         run(context, msg)
         return true

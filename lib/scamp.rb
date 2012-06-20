@@ -1,10 +1,12 @@
-require 'eventmachine'
+require 'celluloid'
 require "logger"
 
 require "scamp/version"
 require 'scamp/matcher'
 
 class Scamp
+  include Celluloid
+
   attr_accessor :adapters, :plugins, :matchers, :logger, :verbose, :first_match_only
 
   def initialize(options = {}, &block)
@@ -19,41 +21,53 @@ class Scamp
     end
     
     @matchers ||= []
-    @adapters ||= {}
+    @adapters ||= []
     @plugins  ||= []
 
     yield self if block_given?
   end
 
   def adapter name, klass, opts={}
-    adapter = klass.new self, opts
-    sid = adapter.subscribe do |context, msg|
-      process_message(name, context, msg)
-    end
-    @adapters[name] = {:adapter => adapter, :sid => sid}
+    # Supervise the adapter, boot a new one if it crashes.
+    klass.supervise_as name, name, self, opts
+    @adapters << name
   end
 
   def plugin klass, opts={}
     plugins << klass.new(self, opts)
   end
 
-  def connect!
-    EM.run do
-      @adapters.each do |name, data|
-        logger.info "Connecting to #{name} adapter"
-        data[:adapter].connect!
+  def connect
+    # Connect all adapters
+    @adapters.each do |name|
+      logger.info "Connecting to #{name} adapter"
+      Actor[name].connect!
+    end
+
+    # Continuely loop poping items off the queues
+    loop do
+      unless queue.empty?
+        logger.info "Got a message"
+        adapter, context, msg = queue.pop
+        process_message!(adapter, context, msg)
       end
+      sleep(0.5)
     end
   end
   
+  def queue
+    @queue ||= Queue.new
+  end
+
   def command_list
     matchers.map{|m| [m.trigger, m.conditions] }
   end
 
   def logger
     unless @logger
-      @logger = Logger.new(STDOUT)
-      @logger.level = (verbose ? Logger::DEBUG : Logger::INFO)
+      # @logger = Logger.new(STDOUT)
+      # @logger.level = (verbose ? Logger::DEBUG : Logger::INFO)
+      @logger = Celluloid.logger
     end
     @logger
   end
@@ -72,9 +86,10 @@ class Scamp
     matchers << Matcher.new(self, {:trigger => trigger, :action => block, :on => params[:on], :conditions => params[:conditions]})
   end
   
-  def process_message(channel, context, msg)
+  def process_message(adapter, context, msg)
+    logger.info "Processing message #{msg} on #{adapter.channel}"
     matchers.each do |matcher|
-      break if first_match_only & matcher.attempt(channel, context, msg)
+      matcher.attempt!(adapter.channel, context, msg)
     end
   end
 end
